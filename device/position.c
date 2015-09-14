@@ -2,6 +2,6 @@
 
 void set_position(struct Jelly* jelly, struct Position* position)
 {
-  jelly->posiiton.x = position.x;
-  jelly->position.y = position.y;
+  jelly->position->x = position->x;
+  jelly->position->y = position->y;
 }

@@ -1,4 +1,4 @@
-#ifnded __COLOR_H
+#ifndef __COLOR_H
 #define __COLOR_H
 
 // standard c headers
