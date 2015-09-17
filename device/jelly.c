@@ -29,14 +29,15 @@ void jelly_reset(struct Jelly *jelly)
 
 void jelly_sleep(struct Jelly *jelly)
 {
+#ifdef DEBUG_PRINT
+    printf("child sleep\n");
+#endif
+
 #ifdef SIMULATED
   // pthread sleep
   pthread_mutex_lock(&(jelly->simulator_sleep_mutex));
   jelly->sleeping = true;
   while (jelly->sleeping == true) {
-#ifdef DEBUG_PRINT
-    printf("child sleep\n");
-#endif
     pthread_cond_wait(&(jelly->simulator_sleep_cond) ,&(jelly->simulator_sleep_mutex));
   }
   pthread_mutex_unlock(&(jelly->simulator_sleep_mutex));
@@ -59,8 +60,9 @@ void jelly_malloc(struct Jelly *jelly)
  *
  * NOTE: This function should not exit, if it exited there is likely an error.
  */
-int jelly_init(struct Jelly *jelly)
+void *jelly_init(void *jelly_ptr)
 {
+  struct Jelly* jelly = (struct Jelly*) jelly_ptr;
   jelly_malloc(jelly);
   jelly_reset(jelly);
   for (;;) { // main run loop
@@ -68,4 +70,5 @@ int jelly_init(struct Jelly *jelly)
     // Process work
     jelly_sleep(jelly);
   }
+  return NULL;
 }

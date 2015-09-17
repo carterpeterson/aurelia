@@ -29,8 +29,8 @@ struct Jelly {
 
 };
 
-int jelly_init(struct Jelly *jelly);
-void jelly_sleep(struct Jelly *jelly);
-void jelly_reset(struct Jelly *jelly);
+void *jelly_init(void *);
+void jelly_sleep(struct Jelly *);
+void jelly_reset(struct Jelly *);
 
 #endif
