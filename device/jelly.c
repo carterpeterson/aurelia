@@ -1,7 +1,6 @@
 /*
  * jelly.c - Jelly Device initialization code
  */
-
 #include "jelly.h"
 
 /*
@@ -46,13 +45,12 @@ void jelly_sleep(struct Jelly *jelly)
 #endif
 }
 
-/*
- *  Do all the mallocs for a jelly
- */
-void jelly_malloc(struct Jelly *jelly)
+void jelly_wake(struct Jelly *jelly)
 {
-  jelly->color = (struct RGBColor*) malloc(sizeof(struct RGBColor));
-  jelly->position = (struct Position*) malloc(sizeof(struct Position));
+  pthread_mutex_lock(&(jelly->simulator_sleep_mutex));
+  jelly->sleeping = false;
+  pthread_cond_signal(&(jelly->simulator_sleep_cond));
+  pthread_mutex_unlock(&(jelly->simulator_sleep_mutex));
 }
 
 /*
@@ -60,10 +58,16 @@ void jelly_malloc(struct Jelly *jelly)
  *
  * NOTE: This function should not exit, if it exited there is likely an error.
  */
-void *jelly_init(void *jelly_ptr)
+void *jelly_init(void *jelly_init_frame)
 {
-  struct Jelly* jelly = (struct Jelly*) jelly_ptr;
-  jelly_malloc(jelly);
+  struct JellyInitFrame *init_frame =  (struct JellyInitFrame *) jelly_init_frame;
+  struct Jelly* jelly = init_frame->jelly;
+
+  // copy the init values
+  jelly->address = init_frame->address;
+  jelly->color = init_frame->color;
+  jelly->position = init_frame->position;
+
   jelly_reset(jelly);
   for (;;) { // main run loop
     // Check reason for wake

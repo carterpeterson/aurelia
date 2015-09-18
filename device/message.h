@@ -46,7 +46,7 @@ struct JellyMessageListNode {
   struct JellyMessageListNode *next_message;
 };
 
-void m_enqueue_message(struct Jelly *jelly, union JellyMessage *message);
+void m_enqueue_message(struct Jelly *jelly, union JellyMessage *message, bool wake);
 void m_process_messages(struct Jelly *jelly);
 
 #endif

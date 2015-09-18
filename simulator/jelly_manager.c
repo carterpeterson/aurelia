@@ -10,6 +10,7 @@
 // jelly threads
 struct JellyThread {
   struct Jelly* jelly;
+  struct JellyInitFrame *init_frame;
   pthread_t run_thread;
 };
 
@@ -128,6 +129,13 @@ void jm_create_jelly_threads(void)
   for (i = 0; i < NUM_JELLYS; i++) {
     jelly_threads[i] = (struct JellyThread*) malloc(sizeof(struct JellyThread));
     jelly_threads[i]->jelly = (struct Jelly*) malloc(sizeof(struct Jelly));
+
+    // setup the init frame
+    jelly_threads[i]->init_frame =  (struct JellyInitFrame*) malloc(sizeof(struct JellyInitFrame));
+    jelly_threads[i]->init_frame->address = i;
+    jelly_threads[i]->init_frame->position = (struct Position*) malloc(sizeof(struct Position));
+    jelly_threads[i]->init_frame->color = (struct RGBColor*) malloc(sizeof(struct RGBColor));
+
     pthread_create(&(jelly_threads[i]->run_thread), NULL, jelly_init, (void *) jelly_threads[i]->jelly);
   }
 }

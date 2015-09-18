@@ -1,6 +1,9 @@
 #include "message.h"
 
-void m_enqueue_message(struct Jelly *jelly, union JellyMessage *message)
+// forward declares
+void free_message_node(struct JellyMessageListNode *message_node);
+
+void m_enqueue_message(struct Jelly *jelly, union JellyMessage *message, bool wake)
 {
   // place message on the queue
   struct JellyMessageListNode *new_node = malloc(sizeof(struct JellyMessageListNode));
@@ -12,6 +15,9 @@ void m_enqueue_message(struct Jelly *jelly, union JellyMessage *message)
   } else {
     jelly->jelly_message_write_head->next_message = new_node;
   }
+
+  if (wake)
+    jelly_wake(jelly);
 }
 
 void m_process_messages(struct Jelly *jelly)
@@ -44,7 +50,26 @@ void m_process_messages(struct Jelly *jelly)
     }
 
     jelly->jelly_message_read_head = jelly->jelly_message_read_head->next_message;
-    free(current_message_node->message);
-    free(current_message_node);
+    free_message_node(current_message_node);
   }
+}
+
+
+void free_message_node(struct JellyMessageListNode *message_node)
+{
+  switch(message_node->message->type) {
+  case (PROXIMITY_SENSED):
+    free(((struct ProximitySensedMessage *) message_node->message)->position); // free position
+    break;
+  case (PROXIMITY_LOST):
+    free(((struct ProximityLostMessage *) message_node->message)->position); // free position
+    break;
+  case (SET_POSITION):
+    free(((struct SetPositionMessage *) message_node->message)->position); // free position
+    break;
+  default:
+    break;
+  }
+  free(message_node->message);
+  free(message_node);
 }

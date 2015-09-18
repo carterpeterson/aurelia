@@ -9,6 +9,8 @@
 
 // Forward declarations for cirular dependancy w/ jelly struct
 struct Jelly;
+struct JellyInitFrame;
+typedef uint16_t address_t;
 
 // project specific headers
 #include "message.h"
@@ -17,8 +19,9 @@ struct Jelly;
 //#include "network_stack/network.h"
 
 struct Jelly {
-  struct RGBColor* color;
   bool color_invalid;
+  address_t address;
+  struct RGBColor* color;
   struct Position* position;
   struct JellyMessageListNode *jelly_message_read_head;
   struct JellyMessageListNode *jelly_message_write_head;
@@ -31,15 +34,22 @@ struct Jelly {
 #else
   // don't need any way to wake up device externally cause interrupts
 #endif
-
 };
 
 #ifndef SIMULATED
 struct Jelly *global_jelly_ptr; // this is mostly to be used with ISRs when not simulated.
 #endif
 
-void *jelly_init(void *);
-void jelly_sleep(struct Jelly *);
-void jelly_reset(struct Jelly *);
+struct JellyInitFrame {
+  address_t address;
+  struct Jelly *jelly;
+  struct Position *position;
+  struct RGBColor* color;
+};
+
+void *jelly_init(void *jelly_init_frame);
+void jelly_sleep(struct Jelly *jelly);
+void jelly_reset(struct Jelly *jelly);
+void jelly_wake(struct Jelly *jelly);
 
 #endif
