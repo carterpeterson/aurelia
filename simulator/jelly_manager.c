@@ -58,6 +58,7 @@ void *jm_manager_run_loop(void *argument) // idk if i'll need an argument
 
   // jelly manager received teardown message
   jm_teardown_jelly_threads();
+  sem_close(jm_event_queue_sem);
   return NULL; // no return code atm
 }
 
@@ -66,7 +67,6 @@ void *jm_manager_run_loop(void *argument) // idk if i'll need an argument
  */
 void jm_queue_event(struct JellyEvent *jelly_event, bool wake)
 {
-  printf("--jm_queue_event--\n");
   pthread_mutex_lock(&jm_event_queue_mutex);
 
   if (jm_event_queue_head == NULL) {
@@ -82,24 +82,19 @@ void jm_queue_event(struct JellyEvent *jelly_event, bool wake)
 
   if (wake) {
     sem_post(jm_event_queue_sem);
-    printf("wake jm_thread\n");
   }
-  printf("++jm_queue_event++\n");
 }
 
 void jm_process_events(void)
 {
-  printf("--jm_process_events--\n");
   // We should already have the jm_event_queue lock at this point
   struct JellyEvent *next;
 
   pthread_mutex_lock(&jm_event_queue_mutex);
-  //printf("jm_process_events aquired_lock\n");
   while (jm_event_queue_head != NULL) {
     switch (jm_event_queue_head->type) {
     case(TEARDOWN):
       jm_teardown = true;
-      //printf("teardown seen\n");
       break;
     default:
       // do nothing for now
@@ -114,12 +109,12 @@ void jm_process_events(void)
   pthread_mutex_unlock(&jm_event_queue_mutex);
 }
 
-struct JellyEvent* jm_create_event(enum jelly_event_type type)
+struct JellyEvent* jm_create_event(enum JellyEventType type)
 {
-  printf("--jm_create_event--\n");
   struct JellyEvent* new_jelly_event = (struct JellyEvent*) malloc(sizeof(struct JellyEvent));
   new_jelly_event->type = type;
-  new_jelly_event->payload = NULL;
+  new_jelly_event->dst_addr = 0;
+  new_jelly_event->message = NULL;
   new_jelly_event->next_event = NULL;
   return new_jelly_event;
 }
@@ -129,7 +124,6 @@ struct JellyEvent* jm_create_event(enum jelly_event_type type)
  */
 void jm_create_jelly_threads(void)
 {
-  //printf("--jelly create threads--\n");
   int i;
   for (i = 0; i < NUM_JELLYS; i++) {
     jelly_threads[i] = (struct JellyThread*) malloc(sizeof(struct JellyThread));

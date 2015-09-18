@@ -68,6 +68,7 @@ void *jelly_init(void *jelly_ptr)
   for (;;) { // main run loop
     // Check reason for wake
     // Process work
+    m_process_messages(jelly);
     jelly_sleep(jelly);
   }
   return NULL;

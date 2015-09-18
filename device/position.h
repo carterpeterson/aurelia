@@ -4,13 +4,20 @@
 // standard c headers
 #include <stdint.h>
 
+// forward declares
+struct Position;
+
 // project specific
 #include "jelly.h"
 
+// forward struct declarations
+typedef uint16_t position_t;
+
 struct Position {
-  uint16_t x, y;
+  position_t x, y;
 };
 
-void set_position(struct Jelly *jelly, struct Position*);
+
+void p_set_position(struct Jelly *jelly, struct Position*);
 
 #endif

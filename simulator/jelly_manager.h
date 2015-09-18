@@ -10,10 +10,12 @@
 
 // project specific
 #include "../device/jelly.h"
+//#include "../device/network_stack/network.h"
+typedef uint16_t JellyAddress;
 
 #define NUM_JELLYS 50
 
-enum jelly_event_type {
+enum JellyEventType {
   PROXIMITY,
   NETWORK_MESSAGE,
   TIMER,
@@ -21,8 +23,9 @@ enum jelly_event_type {
 };
 
 struct JellyEvent {
-  enum jelly_event_type type;
-  void *payload;
+  enum JellyEventType type;
+  JellyAddress dst_addr;
+  union JellyMessage* message;
   struct JellyEvent* next_event;
 };
 
@@ -31,7 +34,7 @@ extern struct JellyEvent *jm_event_queue_head;
 extern pthread_mutex_t jelly_event_queue_mutex;
 
 void jm_manager_init(void);
-void jm_queue_event(struct JellyEvent *, bool);
-struct JellyEvent* jm_create_event(enum jelly_event_type);
+void jm_queue_event(struct JellyEvent *jelly_event, bool notify);
+struct JellyEvent* jm_create_event(enum JellyEventType event_type);
 
 #endif
