@@ -1,7 +1,7 @@
 #include "message.h"
 
 // forward declares
-void free_message_node(struct JellyMessageListNode *message_node);
+void m_free_message_node(struct JellyMessageListNode *message_node);
 
 void m_enqueue_message(struct Jelly *jelly, union JellyMessage *message, bool wake)
 {
@@ -13,7 +13,10 @@ void m_enqueue_message(struct Jelly *jelly, union JellyMessage *message, bool wa
   if (jelly->jelly_message_write_head == NULL) {
     jelly->jelly_message_write_head = new_node;
   } else {
-    jelly->jelly_message_write_head->next_message = new_node;
+    struct JellyMessageListNode* tail = jelly->jelly_message_write_head;
+    while (tail->next_message != NULL)
+      tail = tail->next_message;
+    tail->next_message = new_node;
   }
 
   if (wake)
@@ -37,9 +40,11 @@ void m_process_messages(struct Jelly *jelly)
     switch (current_message_node->message->type) {
     case (PROXIMITY_SENSED):
       // proximity sensed processing
+      proximity_sensed(jelly, ((struct ProximitySensedMessage *) current_message_node->message)->position);
       break;
     case (PROXIMITY_LOST):
       // proximity lost processing
+      proximity_sensed(jelly, ((struct ProximitySensedMessage *) current_message_node->message)->position);
       break;
     case (SET_POSITION):
       p_set_position(jelly, ((struct SetPositionMessage *) current_message_node->message)->position);
@@ -50,26 +55,30 @@ void m_process_messages(struct Jelly *jelly)
     }
 
     jelly->jelly_message_read_head = jelly->jelly_message_read_head->next_message;
-    free_message_node(current_message_node);
+    m_free_message_node(current_message_node);
   }
 }
 
-
-void free_message_node(struct JellyMessageListNode *message_node)
+void m_free_message(union JellyMessage *message)
 {
-  switch(message_node->message->type) {
+ switch(message->type) {
   case (PROXIMITY_SENSED):
-    free(((struct ProximitySensedMessage *) message_node->message)->position); // free position
+    free(((struct ProximitySensedMessage *) message)->position); // free position
     break;
   case (PROXIMITY_LOST):
-    free(((struct ProximityLostMessage *) message_node->message)->position); // free position
+    free(((struct ProximityLostMessage *) message)->position); // free position
     break;
   case (SET_POSITION):
-    free(((struct SetPositionMessage *) message_node->message)->position); // free position
+    free(((struct SetPositionMessage *) message)->position); // free position
     break;
   default:
     break;
   }
-  free(message_node->message);
+  free(message);
+}
+
+void m_free_message_node(struct JellyMessageListNode *message_node)
+{
+  m_free_message(message_node->message);
   free(message_node);
 }

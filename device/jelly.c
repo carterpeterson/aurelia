@@ -8,6 +8,7 @@
  */
 void jelly_reset(struct Jelly *jelly)
 {
+  // reset color
   jelly->color->red = 0;
   jelly->color->green = 0;
   jelly->color->blue = 0;
@@ -16,6 +17,11 @@ void jelly_reset(struct Jelly *jelly)
   // reset position
   jelly->position->x = 0;
   jelly->position->y = 0;
+
+  // make sure pointers start at null
+  jelly->jelly_message_read_head = NULL;
+  jelly->jelly_message_write_head = NULL;
+  jelly->proximity_locations = NULL;
 
 #ifdef SIMULATED
   jelly->simulator_sleep_cond = (pthread_cond_t) PTHREAD_COND_INITIALIZER;
@@ -29,7 +35,7 @@ void jelly_reset(struct Jelly *jelly)
 void jelly_sleep(struct Jelly *jelly)
 {
 #ifdef DEBUG_PRINT
-    printf("child sleep\n");
+  printf("child (addr: %d) sleep\n", jelly->address);
 #endif
 
 #ifdef SIMULATED
@@ -64,8 +70,8 @@ void *jelly_init(void *jelly_init_frame)
   struct Jelly* jelly = init_frame->jelly;
 
   // copy the init values
-  jelly->address = init_frame->address;
   jelly->color = init_frame->color;
+  jelly->address = init_frame->address;
   jelly->position = init_frame->position;
 
   jelly_reset(jelly);

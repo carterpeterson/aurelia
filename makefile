@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -lpthread
+CFLAGS=-Wall -lpthread -g
 SIMULATION_DEFINES=-D SIMULATED -D DEBUG_PRINT
 
 all: simulation

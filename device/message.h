@@ -12,6 +12,7 @@
 #include "color.h"
 #include "jelly.h"
 #include "util.h"
+#include "proximity.h"
 
 enum JellyMessageType {
   PROXIMITY_SENSED,
@@ -48,5 +49,6 @@ struct JellyMessageListNode {
 
 void m_enqueue_message(struct Jelly *jelly, union JellyMessage *message, bool wake);
 void m_process_messages(struct Jelly *jelly);
+void m_free_message(union JellyMessage *message);
 
 #endif

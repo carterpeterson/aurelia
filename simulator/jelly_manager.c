@@ -86,6 +86,12 @@ void jm_queue_event(struct JellyEvent *jelly_event, bool wake)
   }
 }
 
+void jm_free_event(struct JellyEvent *event)
+{
+  //m_free_message(event->message);
+  free(event);
+}
+
 void jm_process_events(void)
 {
   // We should already have the jm_event_queue lock at this point
@@ -97,6 +103,8 @@ void jm_process_events(void)
     case(TEARDOWN):
       jm_teardown = true;
       break;
+    case(PROXIMITY):
+      m_enqueue_message(jelly_threads[jm_event_queue_head->dst_addr]->jelly, jm_event_queue_head->message, true);
     default:
       // do nothing for now
       break;
@@ -104,7 +112,7 @@ void jm_process_events(void)
 
     // Free the processed event and move onto the next
     next = jm_event_queue_head->next_event;
-    free(jm_event_queue_head);
+    jm_free_event(jm_event_queue_head);
     jm_event_queue_head = next;
   }
   pthread_mutex_unlock(&jm_event_queue_mutex);
@@ -132,11 +140,12 @@ void jm_create_jelly_threads(void)
 
     // setup the init frame
     jelly_threads[i]->init_frame =  (struct JellyInitFrame*) malloc(sizeof(struct JellyInitFrame));
+    jelly_threads[i]->init_frame->jelly = jelly_threads[i]->jelly;
     jelly_threads[i]->init_frame->address = i;
     jelly_threads[i]->init_frame->position = (struct Position*) malloc(sizeof(struct Position));
     jelly_threads[i]->init_frame->color = (struct RGBColor*) malloc(sizeof(struct RGBColor));
 
-    pthread_create(&(jelly_threads[i]->run_thread), NULL, jelly_init, (void *) jelly_threads[i]->jelly);
+    pthread_create(&(jelly_threads[i]->run_thread), NULL, jelly_init, (void *) jelly_threads[i]->init_frame);
   }
 }
 

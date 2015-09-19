@@ -25,6 +25,7 @@ struct Jelly {
   struct Position* position;
   struct JellyMessageListNode *jelly_message_read_head;
   struct JellyMessageListNode *jelly_message_write_head;
+  struct ProximityListNode *proximity_locations;
 
 #ifdef SIMULATED
   pthread_cond_t simulator_sleep_cond;

@@ -10,7 +10,8 @@
 
 // project specific
 #include "../device/jelly.h"
-//#include "../device/network_stack/network.h"
+#include "../device/message.h"
+
 typedef uint16_t JellyAddress;
 
 #define NUM_JELLYS 50
