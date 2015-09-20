@@ -28,10 +28,17 @@ struct Jelly {
   struct ProximityListNode *proximity_locations;
 
 #ifdef SIMULATED
+  // sleep simulation locks
   pthread_cond_t simulator_sleep_cond;
   pthread_mutex_t simulator_sleep_mutex;
-  pthread_mutex_t interrupts_enabled_mutex;
   bool sleeping;
+
+  // interupt enabling / disabling simulation
+  pthread_mutex_t interrupts_enabled_mutex;
+
+  // x11 render buffer
+  struct RGBColor* render_color;
+  pthread_mutex_t render_color_mutex;
 #else
   // don't need any way to wake up device externally cause interrupts
 #endif

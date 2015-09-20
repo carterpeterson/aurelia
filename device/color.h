@@ -8,10 +8,14 @@
 // project specific headers
 #include "jelly.h"
 
+#ifdef SIMULATED
+#include "../simulator/render.h"
+#endif
+
 struct RGBColor {
   uint8_t red, green, blue;
 };
 
-void set_color(struct Jelly*, struct RGBColor*);
+void c_update_color(struct Jelly *jelly);
 
 #endif

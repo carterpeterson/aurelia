@@ -11,10 +11,11 @@
 // project specific
 #include "../device/jelly.h"
 #include "../device/message.h"
+#include "../device/position.h"
 
 typedef uint16_t JellyAddress;
 
-#define NUM_JELLYS 50
+#define NUM_JELLYS 10
 
 enum JellyEventType {
   PROXIMITY,
@@ -33,6 +34,9 @@ struct JellyEvent {
 // jelly manager event queue
 extern struct JellyEvent *jm_event_queue_head;
 extern pthread_mutex_t jelly_event_queue_mutex;
+
+// access to the jelly threads
+extern struct JellyThread *jelly_threads[];
 
 void jm_manager_init(void);
 void jm_queue_event(struct JellyEvent *jelly_event, bool notify);

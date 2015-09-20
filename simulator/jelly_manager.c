@@ -88,7 +88,7 @@ void jm_queue_event(struct JellyEvent *jelly_event, bool wake)
 
 void jm_free_event(struct JellyEvent *event)
 {
-  //m_free_message(event->message);
+  // don't free the message itself cause it gets handles by the jelly
   free(event);
 }
 
@@ -142,7 +142,7 @@ void jm_create_jelly_threads(void)
     jelly_threads[i]->init_frame =  (struct JellyInitFrame*) malloc(sizeof(struct JellyInitFrame));
     jelly_threads[i]->init_frame->jelly = jelly_threads[i]->jelly;
     jelly_threads[i]->init_frame->address = i;
-    jelly_threads[i]->init_frame->position = (struct Position*) malloc(sizeof(struct Position));
+    jelly_threads[i]->init_frame->position = p_random_position();
     jelly_threads[i]->init_frame->color = (struct RGBColor*) malloc(sizeof(struct RGBColor));
 
     pthread_create(&(jelly_threads[i]->run_thread), NULL, jelly_init, (void *) jelly_threads[i]->init_frame);

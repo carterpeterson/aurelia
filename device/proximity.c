@@ -8,7 +8,7 @@ void free_proximity_list_node(struct ProximityListNode *node);
 void proximity_sensed(struct Jelly *jelly, struct Position *position)
 {
 #ifdef DEBUG_PRINT
-  printf("jelly: %x, position: %x\n", jelly, position);
+  printf("jelly: %x, position: %x\n", (unsigned int) jelly, (unsigned int) position);
   printf("(%d) proximity sensed: %d, %d\n", jelly->address, position->x, position->y);
 #endif
   add_proximity_to_list(jelly, position);

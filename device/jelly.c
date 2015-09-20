@@ -27,6 +27,8 @@ void jelly_reset(struct Jelly *jelly)
   jelly->simulator_sleep_cond = (pthread_cond_t) PTHREAD_COND_INITIALIZER;
   jelly->simulator_sleep_mutex = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
   jelly->sleeping = false;
+
+  jelly->render_color_mutex = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
 #else
   printf("not simulated\n");
 #endif
@@ -74,11 +76,15 @@ void *jelly_init(void *jelly_init_frame)
   jelly->address = init_frame->address;
   jelly->position = init_frame->position;
 
+#ifdef SIMULATED // malloc the render buffer if we're simulated
+  jelly->render_color = malloc(sizeof(struct RGBColor));
+#endif
+
   jelly_reset(jelly);
   for (;;) { // main run loop
-    // Check reason for wake
-    // Process work
     m_process_messages(jelly);
+    // update color
+    // send_pending_network_packets
     jelly_sleep(jelly);
   }
   return NULL;

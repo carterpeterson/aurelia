@@ -1,128 +1,97 @@
 #include "render.h"
 
 // things needed for x11
-Display *dis;
+Display *x11_display;
 int screen;
 Window win;
 GC gc;
 
 // some forward declares
-void init_x();
-void close_x();
-void redraw();
-void create_colormap();
-long resolve_pixel_color(Pixel p);
-void render_frame_buffer();
+void r_init_x();
+void r_close_x();
+void r_redraw();
 
-int width, height, pixel_width, pixel_height;
-Pixel pixel_buffers[2][NUM_JELLYS];
-Pixel *read_buffer, *frame_buffer;
+int width, height, jelly_radius;
 
-pthread_mutex_t frame_buffer_lock;
-bool render_flag;
-
-void init_display(void)
+void r_init_display(void)
 {
-  pthread_mutex_init(&frame_buffer_lock, NULL);
-  render_flag = false;
-  init_x();
-
-  frame_buffer = pixel_buffers[0];
-  read_buffer = pixel_buffers[1];
-
-  int i = 0;
-  for(; i < PIXELS_WIDTH * PIXELS_HEIGHT; i++) {
-    frame_buffer[i].red = 0;
-    frame_buffer[i].green = 0;
-    frame_buffer[i].blue = 0;
-  }
+  r_init_x();
 }
 
-void init_x()
+void r_init_x()
 {
-  /* get the colors black and white (see section for details) */
   unsigned long black,white;
 
-  dis=XOpenDisplay((char *)0);
-  screen=DefaultScreen(dis);
-  black=BlackPixel(dis,screen),
-    white=WhitePixel(dis, screen);
-  win=XCreateSimpleWindow(dis,DefaultRootWindow(dis),0,0,
-			  EMULATOR_WINDOW_WIDTH, EMULATOR_WINDOW_HEIGHT, 0, black, white);
-  XSetStandardProperties(dis, win, "GameTable Emulator",
-			 "GameTable Emulator", None, NULL, 0, NULL);
-  XSelectInput(dis, win, ExposureMask|ButtonPressMask|ButtonReleaseMask|Button1MotionMask);
-  XAutoRepeatOn(dis);
-  gc=XCreateGC(dis, win, 0,0);
-  XSetBackground(dis,gc,white);
-  XSetForeground(dis,gc,black);
+  // setup the display
+  x11_display = XOpenDisplay((char *) 0);
+  screen = DefaultScreen(x11_display);
+  black = BlackPixel(x11_display, screen);
+  white = WhitePixel(x11_display, screen);
+  win=XCreateSimpleWindow(x11_display, DefaultRootWindow(x11_display), 0, 0,
+			  SIMULATOR_WINDOW_WIDTH, SIMULATOR_WINDOW_HEIGHT, 0, black, white);
+  XSetStandardProperties(x11_display, win, "aurelia simulator",
+			 "aurelia", None, NULL, 0, NULL);
+  XSelectInput(x11_display, win, ExposureMask|ButtonPressMask|ButtonReleaseMask|Button1MotionMask);
+  XAutoRepeatOn(x11_display);
+  gc = XCreateGC(x11_display, win, 0, 0);
+  XSetBackground(x11_display, gc, white);
+  XSetForeground(x11_display, gc, black);
 
+  // enfore the window sizing
   XSizeHints hints;
   hints.flags = PMinSize | PMaxSize;
-  hints.max_width = EMULATOR_WINDOW_WIDTH;
-  hints.min_width = EMULATOR_WINDOW_WIDTH;
-  hints.max_height = EMULATOR_WINDOW_HEIGHT;
-  hints.min_height = EMULATOR_WINDOW_HEIGHT;
-  XSetWMNormalHints(dis, win, &hints);
+  hints.max_width = SIMULATOR_WINDOW_WIDTH;
+  hints.min_width = SIMULATOR_WINDOW_WIDTH;
+  hints.max_height = SIMULATOR_WINDOW_HEIGHT;
+  hints.min_height = SIMULATOR_WINDOW_HEIGHT;
+  XSetWMNormalHints(x11_display, win, &hints);
 
-  XClearWindow(dis, win);
-  XMapRaised(dis, win);
+  XClearWindow(x11_display, win);
+  XMapRaised(x11_display, win);
 
+  // get the window / rendering properties
   XWindowAttributes win_attr;
-  XGetWindowAttributes(dis, win, &win_attr);
+  XGetWindowAttributes(x11_display, win, &win_attr);
+
   width = win_attr.width;
   height = win_attr.height;
-  pixel_width = width / 32;
-  pixel_height = height / 8;
+  jelly_radius = JELLY_RADIUS;
 }
 
-void close_x()
+void r_close_x()
 {
-  XFreeGC(dis, gc);
-  XDestroyWindow(dis,win);
-  XCloseDisplay(dis);
+  XFreeGC(x11_display, gc);
+  XDestroyWindow(x11_display, win);
+  XCloseDisplay(x11_display);
   exit(1);
 }
 
 /*
  *  X Window rendering related functions
  */
-void redraw()
+void r_redraw()
 {
-  XClearWindow(dis, win);
+  XClearWindow(x11_display, win);
 }
 
-long resolve_pixel_color(Pixel p)
+/*long r_resolve_pixel_color(Pixel p)
 {
   return (long) (p.red << 16) + (p.green << 8) + p.blue;
-}
+  }*/
 
-void render_frame_buffer()
+void r_render_frame_buffer()
 {
-  int i = 0;
+  /*int i = 0;
   for(; i < PIXELS_WIDTH * PIXELS_HEIGHT; i++) {
     XSetForeground(dis, gc, resolve_pixel_color(read_buffer[i]));
     XFillRectangle(dis, win, gc, (i % PIXELS_WIDTH) * pixel_width,
 		   (i / PIXELS_WIDTH) * pixel_height, pixel_width, pixel_height);
-  }
+                   }*/
 
-  XFlush(dis);
+  XFlush(x11_display);
 }
 
-void set_pixel(int i, int j, Pixel p)
+void r_render()
 {
-  frame_buffer[(j * PIXELS_WIDTH) + i] = p;
-}
-
-void render()
-{
-  Pixel *temp;
-
-  pthread_mutex_lock(&frame_buffer_lock);
-  temp = read_buffer;
-  read_buffer = frame_buffer;
-  frame_buffer = read_buffer;
-
-  render_flag = true;
-  pthread_mutex_unlock(&frame_buffer_lock);
+  // do nothing atm
 }

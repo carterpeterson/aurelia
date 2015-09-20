@@ -14,8 +14,12 @@
 #include <stdbool.h>
 #include <pthread.h>
 
-// Project Specific Headers
-#include "./device/color.h"
+// simulator headers
+#include "jelly_manager.h"
+
+// device headers
+#include "../device/color.h"
+
 
 // Desktop simulation related constants
 #define SIMULATOR_WINDOW_WIDTH   1000
@@ -23,13 +27,8 @@
 #define JELLY_RADIUS 10
 
 extern Display *x11_display;
-extern int width, height, pixel_width, pixel_height;
-extern pthread_mutex_t frame_buffer_lock;
-extern bool render_flag;
 
-void render(void);
-void render_frame_buffer(void);
-void init_display(void);
-void set_pixel(int i, int j, Pixel p);
+void r_render(void);
+void r_init_display(void);
 
 #endif
