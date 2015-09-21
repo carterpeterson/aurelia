@@ -14,8 +14,14 @@
 #include <stdint.h>
 #include <pthread.h>
 
-/* Project Headers */
+// simulation headers
 #include "render.h"
+
+// device headers
+#include "../device/jelly.h"
+
+#define PROXIMITY_WINDOW_WIDTH 100
+#define PROXIMITY_WINDOW_HEIGHT 100
 
 struct Mouse {
   int x_pos, y_pos;

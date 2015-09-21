@@ -9,13 +9,14 @@ GC gc;
 // some forward declares
 void r_init_x();
 void r_close_x();
-void r_redraw();
 
 int width, height, jelly_radius;
+long proximity_window_color;
 
 void r_init_display(void)
 {
   r_init_x();
+  proximity_window_color = (long) (255 << 16);
 }
 
 void r_init_x()
@@ -66,14 +67,6 @@ void r_close_x()
   exit(1);
 }
 
-/*
- *  X Window rendering related functions
- */
-void r_redraw()
-{
-  XClearWindow(x11_display, win);
-}
-
 long r_resolve_rgb_color(struct RGBColor* color)
 {
   return (long) (color->red << 16) + (color->green << 8) + color->blue;
@@ -84,6 +77,11 @@ void r_render()
   int i = 0;
   long render_color;
   int x_pos, y_pos;
+
+  // clear the window
+  XClearWindow(x11_display, win);
+
+  // draw the jellys
   for(; i < NUM_JELLYS; i++) {
 
     // resolve the color
@@ -98,6 +96,15 @@ void r_render()
 
     XFillArc(x11_display, win, gc,  x_pos, y_pos, (JELLY_RADIUS * 2), (JELLY_RADIUS * 2),
              (JELLY_ARC_START_ANGLE * 64), (JELLY_ARC_END_ANGLE * 64));
+  }
+
+  // draw the proximity window (centered on the mouse)
+  if (mouse_pos->pressed) {
+    x_pos = mouse_pos->x_pos - (PROXIMITY_WINDOW_WIDTH / 2);
+    y_pos = mouse_pos->y_pos - (PROXIMITY_WINDOW_HEIGHT / 2);
+
+    XSetForeground(x11_display, gc, proximity_window_color);
+    XDrawRectangle(x11_display, win, gc, x_pos, y_pos, PROXIMITY_WINDOW_WIDTH, PROXIMITY_WINDOW_HEIGHT);
   }
 
   XFlush(x11_display);

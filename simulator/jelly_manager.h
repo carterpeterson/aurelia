@@ -15,7 +15,7 @@
 
 typedef uint16_t JellyAddress;
 
-#define NUM_JELLYS 10
+#define NUM_JELLYS 50
 
 enum JellyEventType {
   PROXIMITY,
@@ -47,6 +47,7 @@ extern struct JellyThread *jelly_threads[];
 
 void jm_manager_init(void);
 void jm_queue_event(struct JellyEvent *jelly_event, bool notify);
+void jm_queue_notify(void);
 struct JellyEvent* jm_create_event(enum JellyEventType event_type);
 
 #endif

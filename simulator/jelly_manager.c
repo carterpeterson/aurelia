@@ -28,9 +28,10 @@ void *jm_manager_run_loop(void *);
 void jm_manager_init(void)
 {
   // For now just init the thread that is responsible for all jelly threads
+#ifdef DEBUG_PRINT
   printf("--jelly manager init--\n");
+#endif
 
-  //sem_init(&jm_event_queue_sem, 0, 0);
   jm_event_queue_sem = sem_open(JM_EVENT_QUEUE_SEM_NAME, O_CREAT, JM_EVENT_QUEUE_SEM_PERMISSIONS, 0);
   jm_event_queue_mutex = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
   jm_teardown = false;
@@ -44,9 +45,13 @@ void *jm_manager_run_loop(void *argument) // idk if i'll need an argument
   jm_create_jelly_threads();
 
   while (jm_teardown == false) {
+#ifdef DEBUG_PRINT
     printf("jm_thread_going_to_sleep\n");
     sem_wait(jm_event_queue_sem);
     printf("jm_thread_woken_up\n");
+#else
+    sem_wait(jm_event_queue_sem);
+#endif
     jm_process_events();
   }
 
@@ -79,6 +84,11 @@ void jm_queue_event(struct JellyEvent *jelly_event, bool wake)
   }
 }
 
+void jm_queue_notify(void)
+{
+    sem_post(jm_event_queue_sem);
+}
+
 void jm_free_event(struct JellyEvent *event)
 {
   // don't free the message itself cause it gets handles by the jelly
@@ -98,6 +108,7 @@ void jm_process_events(void)
       break;
     case(PROXIMITY):
       m_enqueue_message(jelly_threads[jm_event_queue_head->dst_addr]->jelly, jm_event_queue_head->message, true);
+      break;
     default:
       // do nothing for now
       break;

@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "jelly_manager.h"
 #include "input.h"
@@ -20,6 +22,7 @@ void test_event(void)
 }
 
 int main(int argc, char **argv) {
+  srand(time(NULL));
   // Initialize the networking
   // n_network_init();
 
@@ -31,7 +34,7 @@ int main(int argc, char **argv) {
   i_init_input();
 
   // send the test event
-  test_event();
+  //test_event();
 
   for(;;) {
     // lazy sleeping, could actually try to hit fps but i'm lazy

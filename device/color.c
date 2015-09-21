@@ -20,7 +20,6 @@ void c_determine_color(struct Jelly *jelly)
     jelly->color->green = 0;
     jelly->color->blue = 255;
     jelly->color_invalid = true;
-    printf("(%d): changed color to blue\n", jelly->address);
   } else {
     jelly->color->red = 0;
     jelly->color->green = 0;

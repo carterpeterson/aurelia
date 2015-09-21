@@ -44,7 +44,7 @@ void m_process_messages(struct Jelly *jelly)
       break;
     case (PROXIMITY_LOST):
       // proximity lost processing
-      proximity_sensed(jelly, ((struct ProximitySensedMessage *) current_message_node->message)->position);
+      proximity_lost(jelly, ((struct ProximityLostMessage *) current_message_node->message)->position);
       break;
     case (SET_POSITION):
       p_set_position(jelly, ((struct SetPositionMessage *) current_message_node->message)->position);

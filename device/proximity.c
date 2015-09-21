@@ -16,7 +16,9 @@ void proximity_sensed(struct Jelly *jelly, struct Position *position)
 
 void proximity_lost(struct Jelly *jelly, struct Position *position)
 {
+#ifdef DEBUG_PRINT
   printf("(%d) proximity lost: %d, %d\n", jelly->address, position->x, position->y);
+#endif
   remove_proximity_from_list(jelly, position);
 }
 
@@ -63,7 +65,9 @@ void remove_proximity_from_list(struct Jelly *jelly, struct Position *position)
         if (prev_node != NULL)
           prev_node->next_node = current_node->next_node;
 
-        // free the node
+        // free the node, first move head pointer if deleting head
+        if(jelly->proximity_locations == delete_node)
+          jelly->proximity_locations = delete_node->next_node;
         free_proximity_list_node(delete_node);
       } else { // just continue traversing the list
         prev_node = current_node;
