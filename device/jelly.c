@@ -8,16 +8,6 @@
  */
 void jelly_reset(struct Jelly *jelly)
 {
-  // reset color
-  jelly->color->red = 0;
-  jelly->color->green = 0;
-  jelly->color->blue = 0;
-  jelly->color_invalid = true;
-
-  // reset position
-  jelly->position->x = 0;
-  jelly->position->y = 0;
-
   // make sure pointers start at null
   jelly->jelly_message_read_head = NULL;
   jelly->jelly_message_write_head = NULL;
@@ -28,7 +18,9 @@ void jelly_reset(struct Jelly *jelly)
   jelly->simulator_sleep_mutex = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
   jelly->sleeping = false;
 
+  // x11 rendering color
   jelly->render_color_mutex = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
+  jelly->render_color = malloc(sizeof(struct RGBColor));
 #else
   printf("not simulated\n");
 #endif
@@ -37,7 +29,7 @@ void jelly_reset(struct Jelly *jelly)
 void jelly_sleep(struct Jelly *jelly)
 {
 #ifdef DEBUG_PRINT
-  printf("child (addr: %d) sleep\n", jelly->address);
+  printf("(%d): child (pos x:%d y:%d) sleep\n", jelly->address, jelly->position->x, jelly->position->y);
 #endif
 
 #ifdef SIMULATED
@@ -71,19 +63,16 @@ void *jelly_init(void *jelly_init_frame)
   struct JellyInitFrame *init_frame =  (struct JellyInitFrame *) jelly_init_frame;
   struct Jelly* jelly = init_frame->jelly;
 
+  jelly_reset(jelly);
+
   // copy the init values
   jelly->color = init_frame->color;
   jelly->address = init_frame->address;
   jelly->position = init_frame->position;
 
-#ifdef SIMULATED // malloc the render buffer if we're simulated
-  jelly->render_color = malloc(sizeof(struct RGBColor));
-#endif
-
-  jelly_reset(jelly);
   for (;;) { // main run loop
     m_process_messages(jelly);
-    // update color
+    c_update_color(jelly);
     // send_pending_network_packets
     jelly_sleep(jelly);
   }

@@ -11,13 +11,16 @@ void c_determine_color(struct Jelly *jelly)
        current_node->proximity->position->y == jelly->position->y) {
       local_proximity = true;
     }
+
+    current_node = current_node->next_node;
   }
 
   if (local_proximity) {
-    jelly->color->red = 255;
-    jelly->color->green = 255;
+    jelly->color->red = 0;
+    jelly->color->green = 0;
     jelly->color->blue = 255;
     jelly->color_invalid = true;
+    printf("(%d): changed color to blue\n", jelly->address);
   } else {
     jelly->color->red = 0;
     jelly->color->green = 0;

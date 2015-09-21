@@ -7,13 +7,6 @@
 #define JM_EVENT_QUEUE_SEM_NAME "jm_event_queue_sem"
 #define JM_EVENT_QUEUE_SEM_PERMISSIONS 0600
 
-// jelly threads
-struct JellyThread {
-  struct Jelly* jelly;
-  struct JellyInitFrame *init_frame;
-  pthread_t run_thread;
-};
-
 // jelly manager thread control
 pthread_t jm_main_thread;
 sem_t *jm_event_queue_sem;

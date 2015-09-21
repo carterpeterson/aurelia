@@ -12,10 +12,10 @@ struct Position;
 #include "jelly.h"
 
 // position related definitions / declerations
-#define POSITION_X_MAX 150 // 150 discrete possible x positions
-#define POSITION_Y_MAX 30  // 30 discrete possible y positions
+#define POSITION_X_MAX 1000 // 1000 discrete possible x positions (x coordinate of the center)
+#define POSITION_Y_MAX 200  // 200 discrete possible y positions (y coordinate of the center)
 
-typedef uint8_t position_t;
+typedef uint16_t position_t;
 
 struct Position {
   position_t x, y;

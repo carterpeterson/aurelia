@@ -31,6 +31,13 @@ struct JellyEvent {
   struct JellyEvent* next_event;
 };
 
+// jelly threads
+struct JellyThread {
+  struct Jelly* jelly;
+  struct JellyInitFrame *init_frame;
+  pthread_t run_thread;
+};
+
 // jelly manager event queue
 extern struct JellyEvent *jm_event_queue_head;
 extern pthread_mutex_t jelly_event_queue_mutex;

@@ -74,24 +74,31 @@ void r_redraw()
   XClearWindow(x11_display, win);
 }
 
-/*long r_resolve_pixel_color(Pixel p)
+long r_resolve_rgb_color(struct RGBColor* color)
 {
-  return (long) (p.red << 16) + (p.green << 8) + p.blue;
-  }*/
-
-void r_render_frame_buffer()
-{
-  /*int i = 0;
-  for(; i < PIXELS_WIDTH * PIXELS_HEIGHT; i++) {
-    XSetForeground(dis, gc, resolve_pixel_color(read_buffer[i]));
-    XFillRectangle(dis, win, gc, (i % PIXELS_WIDTH) * pixel_width,
-		   (i / PIXELS_WIDTH) * pixel_height, pixel_width, pixel_height);
-                   }*/
-
-  XFlush(x11_display);
+  return (long) (color->red << 16) + (color->green << 8) + color->blue;
 }
 
 void r_render()
 {
-  // do nothing atm
+  int i = 0;
+  long render_color;
+  int x_pos, y_pos;
+  for(; i < NUM_JELLYS; i++) {
+
+    // resolve the color
+    pthread_mutex_lock(&(jelly_threads[i]->jelly->render_color_mutex));
+    render_color = r_resolve_rgb_color(jelly_threads[i]->jelly->render_color);
+    pthread_mutex_unlock(&(jelly_threads[i]->jelly->render_color_mutex));
+    XSetForeground(x11_display, gc, render_color);
+
+    // get the position
+    x_pos = (jelly_threads[i]->jelly->position->x - JELLY_RADIUS);
+    y_pos = (jelly_threads[i]->jelly->position->y - JELLY_RADIUS);
+
+    XFillArc(x11_display, win, gc,  x_pos, y_pos, (JELLY_RADIUS * 2), (JELLY_RADIUS * 2),
+             (JELLY_ARC_START_ANGLE * 64), (JELLY_ARC_END_ANGLE * 64));
+  }
+
+  XFlush(x11_display);
 }
