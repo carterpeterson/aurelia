@@ -20,6 +20,7 @@ typedef uint16_t address_t;
 
 struct Jelly {
   bool color_invalid;
+  bool local_proximity;
   address_t address;
   struct RGBColor* color;
   struct Position* position;
@@ -39,6 +40,9 @@ struct Jelly {
   // x11 render buffer
   struct RGBColor* render_color;
   pthread_mutex_t render_color_mutex;
+
+  // proximity flag
+  bool local_proximity_sensed;
 #else
   // don't need any way to wake up device externally cause interrupts
 #endif

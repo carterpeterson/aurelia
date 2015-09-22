@@ -1,5 +1,7 @@
 #include "color.h"
 
+#define SIMULATED_COLOR_ZERO 25
+#define DEVICE_COLOR_ZERO 0
 
 void c_determine_color(struct Jelly *jelly)
 {
@@ -16,14 +18,20 @@ void c_determine_color(struct Jelly *jelly)
   }
 
   if (local_proximity) {
-    jelly->color->red = 0;
-    jelly->color->green = 0;
-    jelly->color->blue = 255;
+    jelly->color->red = (jelly->position->x * 255) / POSITION_X_MAX;
+    jelly->color->green = 128;
+    jelly->color->blue = (jelly->position->y * 255) / POSITION_Y_MAX;;
     jelly->color_invalid = true;
   } else {
-    jelly->color->red = 0;
-    jelly->color->green = 0;
-    jelly->color->blue = 0;
+#ifdef SIMULATED
+    jelly->color->red = SIMULATED_COLOR_ZERO;
+    jelly->color->green = SIMULATED_COLOR_ZERO;
+    jelly->color->blue = SIMULATED_COLOR_ZERO;
+#else
+    jelly->color->red = DEVICE_COLOR_ZERO;
+    jelly->color->green = DEVICE_COLOR_ZERO;
+    jelly->color->blue = DEVICE_COLOR_ZERO;
+#endif
     jelly->color_invalid = true;
   }
 }

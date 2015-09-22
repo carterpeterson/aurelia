@@ -29,14 +29,14 @@ void r_init_x()
   black = BlackPixel(x11_display, screen);
   white = WhitePixel(x11_display, screen);
   win=XCreateSimpleWindow(x11_display, DefaultRootWindow(x11_display), 0, 0,
-			  SIMULATOR_WINDOW_WIDTH, SIMULATOR_WINDOW_HEIGHT, 0, black, white);
+			  SIMULATOR_WINDOW_WIDTH, SIMULATOR_WINDOW_HEIGHT, 0, white, black);
   XSetStandardProperties(x11_display, win, "aurelia simulator",
 			 "aurelia", None, NULL, 0, NULL);
   XSelectInput(x11_display, win, ExposureMask|ButtonPressMask|ButtonReleaseMask|Button1MotionMask);
   XAutoRepeatOn(x11_display);
   gc = XCreateGC(x11_display, win, 0, 0);
-  XSetBackground(x11_display, gc, white);
-  XSetForeground(x11_display, gc, black);
+  XSetBackground(x11_display, gc, black);
+  XSetForeground(x11_display, gc, white);
 
   // enfore the window sizing
   XSizeHints hints;

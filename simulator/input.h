@@ -20,7 +20,7 @@
 // device headers
 #include "../device/jelly.h"
 
-#define PROXIMITY_WINDOW_WIDTH 100
+#define PROXIMITY_WINDOW_WIDTH 50
 #define PROXIMITY_WINDOW_HEIGHT 100
 
 struct Mouse {

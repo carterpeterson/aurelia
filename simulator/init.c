@@ -2,9 +2,13 @@
 #include <stdlib.h>
 #include <time.h>
 
+// simulator headers
 #include "jelly_manager.h"
 #include "input.h"
 #include "render.h"
+
+// device headers
+#include "../device/proximity.h"
 
 #define SLEEP_TIME 10000 // 100 fps i guess
 
@@ -34,7 +38,7 @@ int main(int argc, char **argv) {
   i_init_input();
 
   // send the test event
-  //test_event();
+  proximity_init();
 
   for(;;) {
     // lazy sleeping, could actually try to hit fps but i'm lazy

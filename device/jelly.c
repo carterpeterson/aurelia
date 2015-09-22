@@ -12,6 +12,7 @@ void jelly_reset(struct Jelly *jelly)
   jelly->jelly_message_read_head = NULL;
   jelly->jelly_message_write_head = NULL;
   jelly->proximity_locations = NULL;
+  jelly->local_proximity = false;
 
 #ifdef SIMULATED
   jelly->simulator_sleep_cond = (pthread_cond_t) PTHREAD_COND_INITIALIZER;
@@ -21,6 +22,9 @@ void jelly_reset(struct Jelly *jelly)
   // x11 rendering color
   jelly->render_color_mutex = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
   jelly->render_color = malloc(sizeof(struct RGBColor));
+
+  // proximity sensing simulation
+  jelly->local_proximity_sensed = false;
 #else
   printf("not simulated\n");
 #endif

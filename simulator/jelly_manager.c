@@ -107,7 +107,10 @@ void jm_process_events(void)
       jm_teardown = true;
       break;
     case(PROXIMITY):
-      m_enqueue_message(jelly_threads[jm_event_queue_head->dst_addr]->jelly, jm_event_queue_head->message, true);
+      // Shouldn't get PROXIMITY events anymore, the status is changed directly on the jelly to
+      // more accurately simulated an timer based sampling ISR
+      printf("PROXIMITY EVENT HANDLED, THIS SHOULD NOT HAPPEN!!!\\n");
+      //m_enqueue_message(jelly_threads[jm_event_queue_head->dst_addr]->jelly, jm_event_queue_head->message, true);
       break;
     default:
       // do nothing for now

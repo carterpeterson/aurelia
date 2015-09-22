@@ -1,5 +1,15 @@
 #include "proximity.h"
 
+// Simulator proximity ISR alerting thread variables
+#ifdef SIMULATED
+#define PROXIMITY_SAMPLE_ISR_SLEEP_TIME 100000
+
+struct Jelly *current_proximity_isr_jelly;
+pthread_t proximity_sample_isr_thread;
+void *proximity_sample_isr_run_loop(void *argument);
+#endif
+
+
 // some forward declarations
 void add_proximity_to_list(struct Jelly *jelly, struct Position *position);
 void remove_proximity_from_list(struct Jelly *jelly, struct Position *position);
@@ -22,7 +32,76 @@ void proximity_lost(struct Jelly *jelly, struct Position *position)
   remove_proximity_from_list(jelly, position);
 }
 
-// proximity list maintanance functions
+void proximity_init(void)
+{
+#ifdef SIMULATED
+  pthread_create(&proximity_sample_isr_thread, NULL, proximity_sample_isr_run_loop, NULL);
+#endif
+}
+
+/***************************************************
+ *      local proximity sensing / messaging        *
+ ***************************************************/
+
+void proximity_queue_message(struct Jelly *jelly, bool sensed)
+{
+  // can make it a *SensedMessage for both as they're identical structs
+  struct ProximitySensedMessage *proximity_message = malloc(sizeof(struct ProximitySensedMessage));
+  proximity_message->type = (sensed == true) ? PROXIMITY_SENSED : PROXIMITY_LOST;
+  proximity_message->position = malloc(sizeof(struct Position));
+  proximity_message->position->x = jelly->position->x;
+  proximity_message->position->y = jelly->position->y;
+  m_enqueue_message(jelly, (union JellyMessage*) proximity_message, true);
+}
+
+void proximity_sample_isr(void)
+{
+  struct Jelly* jelly;
+  bool current_proximity_sample;
+
+#ifdef SIMULATED
+  jelly = current_proximity_isr_jelly;
+  current_proximity_sample = jelly->local_proximity_sensed;
+  pthread_mutex_lock(&(jelly->interrupts_enabled_mutex)); // act like we're actually an ISR
+#else
+  jelly = global_jelly_ptr; // On device this points to only instance of jelly
+  current_proximity_sample = *PROXIMITY_ACTIVE_GPIO_PIN;
+#endif
+
+  if (current_proximity_sample) {
+    if (!jelly->local_proximity)
+      proximity_queue_message(jelly, true);
+    jelly->local_proximity = true;
+  } else if (!current_proximity_sample) {
+    if (jelly->local_proximity)
+      proximity_queue_message(jelly, false);
+    jelly->local_proximity = false;
+  }
+
+#ifdef SIMULATED
+  pthread_mutex_unlock(&(jelly->interrupts_enabled_mutex));
+#endif
+}
+
+#ifdef SIMULATED
+void *proximity_sample_isr_run_loop(void *argument)
+{
+  int i;
+  for (;;) {
+    usleep(PROXIMITY_SAMPLE_ISR_SLEEP_TIME);
+
+    for (i = 0; i < NUM_JELLYS; i++) {
+      current_proximity_isr_jelly = jelly_threads[i]->jelly;
+      proximity_sample_isr();
+    }
+  }
+}
+#endif
+
+/***************************************************
+ *     proximity list maintanance functions        *
+ ***************************************************/
+
 void add_proximity_to_list(struct Jelly *jelly, struct Position *position)
 {
   // create proximity object and copy values from position reported
