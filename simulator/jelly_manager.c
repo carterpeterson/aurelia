@@ -130,7 +130,7 @@ struct JellyEvent* jm_create_event(enum JellyEventType type)
   struct JellyEvent* new_jelly_event = (struct JellyEvent*) malloc(sizeof(struct JellyEvent));
   new_jelly_event->type = type;
   new_jelly_event->dst_addr = 0;
-  new_jelly_event->message = NULL;
+  new_jelly_event->payload = NULL;
   new_jelly_event->next_event = NULL;
   return new_jelly_event;
 }
@@ -140,7 +140,7 @@ struct JellyEvent* jm_create_event(enum JellyEventType type)
  */
 void jm_create_jelly_threads(void)
 {
-  int i;
+  int i, j;
   for (i = 0; i < NUM_JELLYS; i++) {
     jelly_threads[i] = (struct JellyThread*) malloc(sizeof(struct JellyThread));
     jelly_threads[i]->jelly = (struct Jelly*) malloc(sizeof(struct Jelly));
@@ -151,6 +151,11 @@ void jm_create_jelly_threads(void)
     jelly_threads[i]->init_frame->address = i;
     jelly_threads[i]->init_frame->position = p_random_position();
     jelly_threads[i]->init_frame->color = (struct RGBColor*) malloc(sizeof(struct RGBColor));
+    jelly_threads[i]->init_frame->network_ports = malloc(NUM_NETWORK_PORTS * sizeof(struct NetworkPort*));
+
+    for (j = 0; j < NUM_NETWORK_PORTS; j++) {
+      jelly_threads[i]->init_frame->network_ports[j] = malloc(sizeof(struct JellyNetworkPort));
+    }
 
     pthread_create(&(jelly_threads[i]->run_thread), NULL, jelly_init, (void *) jelly_threads[i]->init_frame);
   }

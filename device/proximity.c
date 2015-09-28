@@ -2,7 +2,7 @@
 
 // Simulator proximity ISR alerting thread variables
 #ifdef SIMULATED
-#define PROXIMITY_SAMPLE_ISR_SLEEP_TIME 100000
+#define PROXIMITY_SAMPLE_ISR_SLEEP_TIME 100000 // 10 Hz
 
 struct Jelly *current_proximity_isr_jelly;
 pthread_t proximity_sample_isr_thread;

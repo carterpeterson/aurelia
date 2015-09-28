@@ -8,12 +8,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+// More forward declares
+typedef uint16_t JellyTime;
+
 // project specific headers
 #include "position.h"
 #include "color.h"
 #include "jelly.h"
 #include "util.h"
 #include "message.h"
+#include "network.h"
 
 // simulator headers
 #ifdef SIMULATED
@@ -22,8 +26,6 @@
 
 // proximity related definitions
 #define DEFAULT_TIME 0
-
-typedef uint16_t JellyTime;
 
 struct Proximity {
   struct Position *position;

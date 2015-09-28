@@ -12,6 +12,7 @@
 #include "../device/jelly.h"
 #include "../device/message.h"
 #include "../device/position.h"
+#include "../device/network.h"
 
 typedef uint16_t JellyAddress;
 
@@ -27,7 +28,7 @@ enum JellyEventType {
 struct JellyEvent {
   enum JellyEventType type;
   JellyAddress dst_addr;
-  union JellyMessage* message;
+  void *payload;
   struct JellyEvent* next_event;
 };
 

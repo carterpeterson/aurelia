@@ -10,13 +10,12 @@
 // Forward declarations for cirular dependancy w/ jelly struct
 struct Jelly;
 struct JellyInitFrame;
-typedef uint16_t address_t;
 
 // project specific headers
 #include "message.h"
 #include "position.h"
 #include "color.h"
-//#include "network_stack/network.h"
+#include "network.h"
 
 struct Jelly {
   bool color_invalid;
@@ -27,6 +26,8 @@ struct Jelly {
   struct JellyMessageListNode *jelly_message_read_head;
   struct JellyMessageListNode *jelly_message_write_head;
   struct ProximityListNode *proximity_locations;
+  struct JellyNetworkPort **network_ports;
+  struct JellyRoutingTableEntry *routing_table_head;
 
 #ifdef SIMULATED
   // sleep simulation locks
@@ -57,6 +58,7 @@ struct JellyInitFrame {
   struct Jelly *jelly;
   struct Position *position;
   struct RGBColor* color;
+  struct JellyNetworkPort **network_ports;
 };
 
 void *jelly_init(void *jelly_init_frame);

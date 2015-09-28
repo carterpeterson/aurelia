@@ -12,6 +12,7 @@ void jelly_reset(struct Jelly *jelly)
   jelly->jelly_message_read_head = NULL;
   jelly->jelly_message_write_head = NULL;
   jelly->proximity_locations = NULL;
+  jelly->routing_table_head = NULL;
   jelly->local_proximity = false;
 
 #ifdef SIMULATED
@@ -73,6 +74,7 @@ void *jelly_init(void *jelly_init_frame)
   jelly->color = init_frame->color;
   jelly->address = init_frame->address;
   jelly->position = init_frame->position;
+  jelly->network_ports = jelly->network_ports;
 
   for (;;) { // main run loop
     m_process_messages(jelly);

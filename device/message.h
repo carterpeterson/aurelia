@@ -22,11 +22,13 @@ enum JellyMessageType {
 
 struct ProximitySensedMessage {
   enum JellyMessageType type;
+  JellyTime time_sensed;
   struct Position *position;
 };
 
 struct ProximityLostMessage {
   enum JellyMessageType type;
+  JellyTime time_sensed;
   struct Position *position;
 };
 
