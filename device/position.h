@@ -7,6 +7,7 @@
 
 // forward declares
 struct Position;
+typedef uint16_t position_t;
 
 // project specific
 #include "jelly.h"
@@ -15,14 +16,12 @@ struct Position;
 #define POSITION_X_MAX 1000 // 1000 discrete possible x positions (x coordinate of the center)
 #define POSITION_Y_MAX 200  // 200 discrete possible y positions (y coordinate of the center)
 
-typedef uint16_t position_t;
-
 struct Position {
   position_t x, y;
 };
 
 
-void p_set_position(struct Jelly *jelly, struct Position*);
+void p_set_position(struct Jelly *jelly, struct Position *position);
 struct Position* p_random_position(void);
 
 #endif

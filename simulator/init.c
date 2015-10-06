@@ -35,17 +35,15 @@ void send_test_message(void)
   packet->src_addr = 0x05;
   packet->dst_addr = BROADCAST_ADDRESS;
   packet->timestamp = 1;
+  packet->sequence_num = 1;
+  packet->port_address = 0x05;
+  packet->hops = 0;
 
   // add the message
-  struct ProximitySensedMessage *message = malloc(sizeof(struct ProximitySensedMessage));
-  message->type = PROXIMITY_SENSED;
-  message->position = malloc(sizeof(struct Position));
-  message->position->x = jelly_zero->position->x;
-  message->position->y = jelly_zero->position->y;
-  message->time_sensed = 1;
-  packet->payload = (void *) message;
-
-  n_packet_received(jelly_zero, packet, 0);
+  packet->payload.type = PAYLOAD_PROXIMITY_SENSED;
+  ((struct JellyNetworkProximitySensedPayload*) &packet->payload)->x_pos = jelly_zero->position->x;
+  ((struct JellyNetworkProximitySensedPayload*) &packet->payload)->y_pos = jelly_zero->position->y;
+  n_packet_available_isr(jelly_zero, packet);
 }
 
 int main(int argc, char **argv) {

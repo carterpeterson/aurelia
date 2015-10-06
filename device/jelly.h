@@ -23,11 +23,19 @@ struct Jelly {
   address_t address;
   struct RGBColor* color;
   struct Position* position;
+  struct JellyNetworkPort **network_ports;
+
+  // Living Proximities
+  struct ProximityListNode *proximity_locations;
+
+  // Message queues
   struct JellyMessageListNode *jelly_message_read_head;
   struct JellyMessageListNode *jelly_message_write_head;
-  struct ProximityListNode *proximity_locations;
-  struct JellyNetworkPort **network_ports;
+
+  // Packet routing lists & queues
   struct JellyRoutingTableEntry *routing_table_head;
+  struct JellyNetworkPacketListNode *network_packet_receive_read;
+  struct JellyNetworkPacketListNode *network_packet_receive_write;
 
 #ifdef SIMULATED
   // sleep simulation locks

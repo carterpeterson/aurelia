@@ -15,31 +15,75 @@ typedef uint8_t port_t; // Index into the network port arrays
 #include "util.h"
 #include "proximity.h"
 #include "message.h"
+#include "position.h"
 
 #define BROADCAST_ADDRESS 0xDEADBEEF // Would go with all F but want edges
  // 30 minute TTL, hopefully if a jelly dies in this window it will send out the death notice
 #define TABLE_ENTRY_TTL 1800
 #define NUM_NETWORK_PORTS 6
+#define SEQUENCE_NUM_START 0
 
 struct JellyNetworkPort {
+  bool alive;
   address_t port_address;
+};
+
+enum JellyNetworkPacketPayloadType {
+  PAYLOAD_PROXIMITY_SENSED,
+  PAYLOAD_PROXIMITY_LOST,
+  PAYLOAD_SET_POSITION,
+  PAYLOAD_HEARTBEAT,
+  PAYLOAD_DEATH_NOTICE
+};
+
+struct JellyNetworkProximitySensedPayload {
+  enum JellyNetworkPacketPayloadType type;
+  position_t x_pos, y_pos;
+};
+
+struct JellyNetworkProximityLostPayload {
+  enum JellyNetworkPacketPayloadType type;
+  position_t x_pos, y_pos;
+};
+
+union JellyNetworkPacketPayload {
+  enum JellyNetworkPacketPayloadType type;
+  struct JellyNetworkProximitySensedPayload proximity_sensed_payload;
+  struct JellyNetworkProximityLostPayload proximity_lost_payload;
 };
 
 struct JellyNetworkPacket {
   address_t src_addr, dst_addr;
+  address_t port_address;
+  uint16_t sequence_num;
   JellyTime timestamp;
-  void *payload;
+  uint8_t hops;
+  union JellyNetworkPacketPayload payload;
+};
+
+struct JellyNetworkPacketListNode {
+  struct JellyNetworkPacket *packet;
+  struct JellyNetworkPacketListNode *next_node;
 };
 
 struct JellyRoutingTableEntry {
-  address_t address;
   port_t port;
+  uint8_t hops;
+  uint16_t current_sequence_num;
+  address_t address;
   JellyTime time_updated;
   struct JellyRoutingTableEntry *next_entry;
 };
 
-void n_packet_received(struct Jelly *jelly, struct JellyNetworkPacket *packet, port_t port);
+void n_process_packets(struct Jelly *jelly);
 void n_send_packet(struct Jelly *jelly, struct JellyNetworkPacket *packet);
 void n_init_network(struct Jelly *jelly);
+
+#ifdef SIMULATED
+void n_packet_available_isr(struct Jelly *jelly, struct JellyNetworkPacket *packet);
+#else
+void n_packet_available_isr(void);
+#endif
+
 
 #endif

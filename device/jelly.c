@@ -12,8 +12,12 @@ void jelly_reset(struct Jelly *jelly)
   jelly->jelly_message_read_head = NULL;
   jelly->jelly_message_write_head = NULL;
   jelly->proximity_locations = NULL;
-  jelly->routing_table_head = NULL;
   jelly->local_proximity = false;
+
+  // network pointers
+  jelly->routing_table_head = NULL;
+  jelly->network_packet_receive_read = NULL;
+  jelly->network_packet_receive_write = NULL;
 
 #ifdef SIMULATED
   jelly->simulator_sleep_cond = (pthread_cond_t) PTHREAD_COND_INITIALIZER;
@@ -77,6 +81,7 @@ void *jelly_init(void *jelly_init_frame)
   jelly->network_ports = jelly->network_ports;
 
   for (;;) { // main run loop
+    n_process_packets(jelly);
     m_process_messages(jelly);
     c_update_color(jelly);
     // send_pending_network_packets
