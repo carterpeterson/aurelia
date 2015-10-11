@@ -18,6 +18,7 @@ void jelly_reset(struct Jelly *jelly)
   jelly->routing_table_head = NULL;
   jelly->network_packet_receive_read = NULL;
   jelly->network_packet_receive_write = NULL;
+  jelly->network_packet_send = NULL;
 
 #ifdef SIMULATED
   jelly->simulator_sleep_cond = (pthread_cond_t) PTHREAD_COND_INITIALIZER;
@@ -78,13 +79,13 @@ void *jelly_init(void *jelly_init_frame)
   jelly->color = init_frame->color;
   jelly->address = init_frame->address;
   jelly->position = init_frame->position;
-  jelly->network_ports = jelly->network_ports;
+  jelly->network_ports = init_frame->network_ports;
 
   for (;;) { // main run loop
     n_process_packets(jelly);
     m_process_messages(jelly);
     c_update_color(jelly);
-    // send_pending_network_packets
+    n_send_pending_packets(jelly);
     jelly_sleep(jelly);
   }
   return NULL;

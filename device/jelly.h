@@ -36,6 +36,7 @@ struct Jelly {
   struct JellyRoutingTableEntry *routing_table_head;
   struct JellyNetworkPacketListNode *network_packet_receive_read;
   struct JellyNetworkPacketListNode *network_packet_receive_write;
+  struct JellyNetworkPacketListNode *network_packet_send;
 
 #ifdef SIMULATED
   // sleep simulation locks

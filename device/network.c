@@ -1,7 +1,12 @@
 #include "network.h"
 
+// relevant internal definitions
+#define PACKET_CONSUMED 0
+#define PACKET_FORWARDED 1
+
 // forward declares
-void n_handle_packet(struct Jelly *jelly, struct JellyNetworkPacket *packet, port_t port);
+uint8_t n_handle_packet(struct Jelly *jelly, struct JellyNetworkPacket *packet, port_t port);
+void n_enqueue_packet(struct Jelly *jelly, struct JellyNetworkPacket *packet);
 
 void n_init_network(struct Jelly *jelly)
 {
@@ -44,15 +49,18 @@ void n_process_packets(struct Jelly *jelly)
   u_enable_interrupts(jelly);
 
   // process the messages
+  uint8_t return_code;
   while (jelly->network_packet_receive_read != NULL) {
     current_packet = jelly->network_packet_receive_read;
-    n_handle_packet(jelly, current_packet->packet, 0);
+    return_code = n_handle_packet(jelly, current_packet->packet, 0);
     jelly->network_packet_receive_read = jelly->network_packet_receive_read->next_node;
-    free(current_packet); // free the packet
+    if (return_code == PACKET_CONSUMED)
+      free(current_packet->packet);
+    free(current_packet); // free the packet list node wrapper
   }
 }
 
-void n_handle_packet(struct Jelly *jelly, struct JellyNetworkPacket *packet, port_t port)
+uint8_t n_handle_packet(struct Jelly *jelly, struct JellyNetworkPacket *packet, port_t port)
 {
   // first update the routing table
   if (jelly->routing_table_head == NULL) {
@@ -121,36 +129,110 @@ void n_handle_packet(struct Jelly *jelly, struct JellyNetworkPacket *packet, por
 
     if (valid) {
       m_enqueue_message(jelly, new_message, false); // jelly is already awake
-      printf("network packet message enqueued\n");
+      if (packet->dst_addr == BROADCAST_ADDRESS) {
+        packet->hops++;
+        if (packet->hops > MAX_HOPS || packet->src_addr == jelly->address) {
+          return PACKET_CONSUMED;
+        }
+        n_enqueue_packet(jelly, packet);
+        return PACKET_FORWARDED;
+      }
     }
   } else {
     // packet not for this jelly, forward the packet
-    //n_send_packet(jelly, packet);
+    packet->hops++;
+    if (packet->hops > MAX_HOPS) {
+      return PACKET_CONSUMED;
+    }
+    n_enqueue_packet(jelly, packet);
+    return PACKET_FORWARDED;
   }
+  return PACKET_CONSUMED;
 }
 
-void n_send_packet(struct Jelly *jelly, struct JellyNetworkPacket *packet)
+void n_enqueue_packet(struct Jelly *jelly, struct JellyNetworkPacket *packet)
 {
-  // check the routing table for port
+  struct JellyNetworkPacketListNode *new_node = malloc(sizeof(struct JellyNetworkPacketListNode));
+  new_node->packet = packet;
+  new_node->next_node = jelly->network_packet_send;
+  jelly->network_packet_send = new_node;
+}
+
+port_t n_port_for_address(struct Jelly *jelly, address_t address)
+{
   bool found = false;
   struct JellyRoutingTableEntry *current_entry = jelly->routing_table_head;
 
   while (current_entry != NULL) {
-    if (current_entry->address == packet->dst_addr) {
+    if (current_entry->address == address) {
       found = true;
       break;
     }
     current_entry = current_entry->next_entry;
   }
 
-  // send the packet
-  if (found) {
-    port_t outbound_port = current_entry->port;
-#ifdef SIMULATED //
+  if (found)
+    return current_entry->port;
+  return PORT_UNKNOWN;
+}
 
+void n_transmit_packet_on_port(struct Jelly *jelly, struct JellyNetworkPacket *packet, port_t port)
+{
+  if (jelly->network_ports[port]->alive == false)
+    return; // don't try to send out a dead port it'll just lock up the radio
+
+  printf("(%d) Send Packet on port:%d address:%x\n", jelly->address, port, jelly->network_ports[port]->port_address);
+  packet->port_address = jelly->network_ports[port]->port_address;
+
+#ifdef SIMULATED
+  // copy the packet, simulate the idea of not a unified address space
+  struct JellyNetworkPacket *packet_copy = malloc(sizeof(struct JellyNetworkPacket));
+  memcpy(packet_copy, packet, sizeof(struct JellyNetworkPacket));
+  address_t port_addr_0, port_addr_1;
+  port_addr_0 = packet->port_address >> HALF_ADDR_SIZE;
+  port_addr_1 = packet->port_address & 0x0000FFFF;
+  if (jelly->address == port_addr_0)
+    n_packet_available_isr(jelly_threads[port_addr_1]->jelly, packet_copy);
+  else
+    n_packet_available_isr(jelly_threads[port_addr_0]->jelly, packet_copy);
 #else
-#endif
-  } else { // broadcast the packet
 
+#endif
+}
+
+void n_broadcast_packet(struct Jelly *jelly, struct JellyNetworkPacket *packet)
+{
+  int i = 0;
+  for (; i < NUM_NETWORK_PORTS; i++) {
+    if (jelly->network_ports[i]->alive && packet->port_address != jelly->network_ports[i]->port_address) {
+      n_transmit_packet_on_port(jelly, packet, i);
+    }
+  }
+}
+
+void n_send_pending_packets(struct Jelly *jelly)
+{
+  struct JellyNetworkPacketListNode *current_packet_node;
+  port_t port;
+
+  // send the packets!
+  while (jelly->network_packet_send != NULL) {
+    current_packet_node = jelly->network_packet_send;
+
+    // Determine the port / if we should broadcast
+    port = PORT_UNKNOWN;
+    if (current_packet_node->packet->dst_addr != BROADCAST_ADDRESS)
+      port = n_port_for_address(jelly, current_packet_node->packet->dst_addr);
+
+    // send or broadcast the packet
+    if (port == PORT_UNKNOWN)
+      n_broadcast_packet(jelly, current_packet_node->packet);
+    else
+      n_transmit_packet_on_port(jelly, current_packet_node->packet, port);
+
+    // free the resources
+    jelly->network_packet_send = jelly->network_packet_send->next_node;
+    free(current_packet_node->packet); // free the packet
+    free(current_packet_node);
   }
 }

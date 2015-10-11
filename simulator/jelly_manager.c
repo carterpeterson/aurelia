@@ -153,8 +153,22 @@ void jm_create_jelly_threads(void)
     jelly_threads[i]->init_frame->color = (struct RGBColor*) malloc(sizeof(struct RGBColor));
     jelly_threads[i]->init_frame->network_ports = malloc(NUM_NETWORK_PORTS * sizeof(struct NetworkPort*));
 
+    address_t link_jelly_address;
     for (j = 0; j < NUM_NETWORK_PORTS; j++) {
       jelly_threads[i]->init_frame->network_ports[j] = malloc(sizeof(struct JellyNetworkPort));
+      jelly_threads[i]->init_frame->network_ports[j]->alive = true;
+
+      if (j < (NUM_NETWORK_PORTS / 2)) {
+        link_jelly_address = (i + (NUM_JELLYS - (NUM_NETWORK_PORTS / 2)) + j) % NUM_JELLYS;
+      } else {
+        link_jelly_address = (i + (j - (NUM_NETWORK_PORTS / 2)) + 1) % NUM_JELLYS;
+      }
+
+      if (link_jelly_address < i) {
+        jelly_threads[i]->init_frame->network_ports[j]->port_address = (i << HALF_ADDR_SIZE) + link_jelly_address;
+      } else {
+        jelly_threads[i]->init_frame->network_ports[j]->port_address = (link_jelly_address << HALF_ADDR_SIZE) + i;
+      }
     }
 
     pthread_create(&(jelly_threads[i]->run_thread), NULL, jelly_init, (void *) jelly_threads[i]->init_frame);

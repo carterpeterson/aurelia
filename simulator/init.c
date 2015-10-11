@@ -30,13 +30,13 @@
 
 void send_test_message(void)
 {
-  struct Jelly *jelly_zero = jelly_threads[0]->jelly;
+  struct Jelly *jelly_zero = jelly_threads[1]->jelly;
   struct JellyNetworkPacket *packet = malloc(sizeof(struct JellyNetworkPacket));
-  packet->src_addr = 0x05;
+  packet->src_addr = 0x00;
   packet->dst_addr = BROADCAST_ADDRESS;
   packet->timestamp = 1;
   packet->sequence_num = 1;
-  packet->port_address = 0x05;
+  packet->port_address = 0x00010000;
   packet->hops = 0;
 
   // add the message
